@@ -1,14 +1,9 @@
-import os
-from flask import Flask, request, jsonify
 from flask_cors import CORS
-from main import get_pet_breed, format_breed, get_petfinder_token, find_pets_nearby, get_organization_details
+from flask import Flask, request, jsonify
+from main import run_detection
+from werkzeug.utils import secure_filename
+from flask import Flask, request, jsonify, render_template
 
-app = Flask(__name__)
-CORS(app)
-UPLOAD_FOLDER = "uploads"
-os.makedirs(UPLOAD_FOLDER, exist_ok=True)
-from flask_cors import CORS
-from flask import Flask, request, jsonify
 import os
 from main import get_pet_breed, format_breed, get_petfinder_token, find_pets_nearby, get_organization_details
 
@@ -16,6 +11,74 @@ app = Flask(__name__)
 CORS(app)
 UPLOAD_FOLDER = "uploads"
 os.makedirs(UPLOAD_FOLDER, exist_ok=True)
+
+
+@app.route('/')
+def index():
+    return render_template('index.html')
+
+
+app.config['UPLOAD_FOLDER'] = 'static/results'
+
+
+@app.route('/upload', methods=['POST'])
+@app.route('/upload', methods=['POST'])
+@app.route('/upload', methods=['POST'])
+def upload():
+    if 'file' not in request.files:
+        return jsonify({'success': False, 'error': 'No file uploaded'}), 400
+
+    file = request.files['file']
+    filename = secure_filename(file.filename)
+
+    os.makedirs(app.config['UPLOAD_FOLDER'], exist_ok=True)
+    filepath = os.path.join(app.config['UPLOAD_FOLDER'], filename)
+    file.save(filepath)
+
+    breed = run_detection(filepath)
+    formatted_breed = format_breed(breed)
+
+
+    token = get_petfinder_token()
+    location = request.form.get("location", "10001")  # Optional fallback ZIP
+    results = find_pets_nearby(formatted_breed, location, token)
+    if not isinstance(results, dict):
+        return jsonify({
+            "success": False,
+            "error": "Failed to fetch Petfinder results. Check API credentials."
+        }), 500
+    pets = []
+    for pet in results.get("animals", []):
+        name = pet.get("name", "Unknown")
+        pet_breed = pet.get("breeds", {}).get("primary", "Unknown")
+
+        contact = pet.get("contact", {})
+        city = contact.get("city", "")
+        state = contact.get("state", "")
+        org_id = pet.get("organization_id")
+
+        if not city and org_id:
+            org_name, city, state = get_organization_details(org_id, token)
+        else:
+            org_name = org_id
+
+        location_text = f"{city}, {state}" if city or state else f"Org: {org_name}"
+        distance = pet.get("distance", "N/A")
+
+        pets.append({
+            "name": name,
+            "breed": pet_breed,
+            "location": location_text,
+            "distance": distance
+        })
+
+    return jsonify({
+        "success": True,
+        "predicted_breed": breed,
+        "formatted_breed": formatted_breed,
+        "results": pets
+    })
+
 
 @app.route("/analyze", methods=["POST"])
 def analyze():
@@ -68,6 +131,7 @@ def analyze():
 
     except Exception as e:
         return jsonify({"error": str(e)}), 500
+
 
 if __name__ == "__main__":
     app.run(debug=True)

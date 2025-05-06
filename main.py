@@ -1,6 +1,7 @@
 from ultralytics import YOLO
 import requests
 import os
+import cv2
 from dotenv import load_dotenv
 
 load_dotenv()
@@ -23,7 +24,7 @@ def get_pet_breed(image_path):
 # --- FORMAT BREED NAME FOR PETFINDER ---
 def format_breed(ai_breed):
     breed = ai_breed.replace("dog-", "").replace("_", " ")
-    return breed.title()  
+    return breed.title()
 
 # --- GET PETFINDER ACCESS TOKEN ---
 def get_petfinder_token():
@@ -70,3 +71,20 @@ def get_organization_details(org_id, token):
         state = org.get("address", {}).get("state", "")
         return name, city, state
     return org_id, "", ""
+
+# Load the model once at module level
+model = YOLO("petfinder_best.pt")  # Replace with your path if using a custom-trained model
+
+def run_detection(input_path):
+    img = cv2.imread(input_path)
+    results = model(img)
+
+    predicted_class = "Unknown"
+
+    for r in results:
+        class_ids = r.boxes.cls.tolist()
+        if class_ids:
+            predicted_class = r.names[int(class_ids[0])]
+        break
+
+    return predicted_class
