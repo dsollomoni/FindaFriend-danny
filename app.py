@@ -1,10 +1,19 @@
+import os
+from flask import Flask, request, jsonify
+from flask_cors import CORS
+from main import get_pet_breed, format_breed, get_petfinder_token, find_pets_nearby, get_organization_details
+
+app = Flask(__name__)
+CORS(app)
+UPLOAD_FOLDER = "uploads"
+os.makedirs(UPLOAD_FOLDER, exist_ok=True)
 from flask_cors import CORS
 from flask import Flask, request, jsonify
 import os
 from main import get_pet_breed, format_breed, get_petfinder_token, find_pets_nearby, get_organization_details
 
 app = Flask(__name__)
-CORS(app) 
+CORS(app)
 UPLOAD_FOLDER = "uploads"
 os.makedirs(UPLOAD_FOLDER, exist_ok=True)
 
