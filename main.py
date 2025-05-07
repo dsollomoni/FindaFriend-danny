@@ -6,12 +6,12 @@ from dotenv import load_dotenv
 
 load_dotenv()
 
-# --- CONFIG ---
+# API STUFF
 PETFINDER_API_KEY = os.getenv("PETFINDER_API_KEY")
 PETFINDER_API_SECRET = os.getenv("PETFINDER_API_SECRET")
 MODEL_PATH = "petfinder_best.pt"
 
-# --- AI MODEL ---
+# AI MODEL
 def get_pet_breed(image_path):
     model = YOLO(MODEL_PATH)
     results = model(image_path)
@@ -21,12 +21,12 @@ def get_pet_breed(image_path):
         for cls_id in class_ids:
             return result.names[int(cls_id)]
 
-# --- FORMAT BREED NAME FOR PETFINDER ---
+# FORMAT BREED NAME FOR PETFINDER
 def format_breed(ai_breed):
     breed = ai_breed.replace("dog-", "").replace("_", " ")
     return breed.title()
 
-# --- GET PETFINDER ACCESS TOKEN ---
+# GET PETFINDER ACCESS TOKEN
 def get_petfinder_token():
     res = requests.post("https://api.petfinder.com/v2/oauth2/token", data={
         "grant_type": "client_credentials",
@@ -40,7 +40,7 @@ def get_petfinder_token():
 
     return res.json().get("access_token")
 
-# --- SEARCH PETS ---
+# SEARCH PETS
 def find_pets_nearby(breed, location, token):
     if not token:
         return []
@@ -58,7 +58,7 @@ def find_pets_nearby(breed, location, token):
     res = requests.get("https://api.petfinder.com/v2/animals", headers=headers, params=params)
     return res.json()
 
-# --- GET ORG DETAILS IF LOCATION IS MISSING ---
+# GET ORG DETAILS IF LOCATION IS MISSING
 def get_organization_details(org_id, token):
     url = f"https://api.petfinder.com/v2/organizations/{org_id}"
     headers = {"Authorization": f"Bearer {token}"}
@@ -73,7 +73,7 @@ def get_organization_details(org_id, token):
     return org_id, "", ""
 
 # Load the model once at module level
-model = YOLO("petfinder_best.pt")  # Replace with your path if using a custom-trained model
+model = YOLO("petfinder_best.pt")
 
 def run_detection(input_path):
     img = cv2.imread(input_path)
