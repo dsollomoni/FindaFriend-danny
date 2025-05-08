@@ -7,20 +7,23 @@ from flask import Flask, request, jsonify, render_template
 import os
 from main import get_pet_breed, format_breed, get_petfinder_token, find_pets_nearby, get_organization_details
 
+# Initialize Flask app
 app = Flask(__name__)
 CORS(app)
+
+# Set upload folder
 UPLOAD_FOLDER = "uploads"
 os.makedirs(UPLOAD_FOLDER, exist_ok=True)
 
-
+# Home route
 @app.route('/')
 def index():
     return render_template('index.html')
 
-
+# Set static upload folder for results
 app.config['UPLOAD_FOLDER'] = 'static/results'
 
-
+# Handle file uploads and return pet matches
 @app.route('/upload', methods=['POST'])
 @app.route('/upload', methods=['POST'])
 @app.route('/upload', methods=['POST'])
@@ -35,28 +38,31 @@ def upload():
     filepath = os.path.join(app.config['UPLOAD_FOLDER'], filename)
     file.save(filepath)
 
+    # Detect breed from image
     breed = run_detection(filepath)
     formatted_breed = format_breed(breed)
 
-
+    # Get token and search pets
     token = get_petfinder_token()
-    location = request.form.get("location", "10001")  # Optional fallback ZIP
+    location = request.form.get("location", "10001")
     results = find_pets_nearby(formatted_breed, location, token)
+
     if not isinstance(results, dict):
         return jsonify({
             "success": False,
             "error": "Failed to fetch Petfinder results. Check API credentials."
         }), 500
+
     pets = []
     for pet in results.get("animals", []):
         name = pet.get("name", "Unknown")
         pet_breed = pet.get("breeds", {}).get("primary", "Unknown")
-
         contact = pet.get("contact", {})
         city = contact.get("city", "")
         state = contact.get("state", "")
         org_id = pet.get("organization_id")
 
+        # Fallback for missing location
         if not city and org_id:
             org_name, city, state = get_organization_details(org_id, token)
         else:
@@ -79,7 +85,7 @@ def upload():
         "results": pets
     })
 
-
+# Alternate endpoint for image and location input
 @app.route("/analyze", methods=["POST"])
 def analyze():
     if "image" not in request.files or "location" not in request.form:
@@ -91,6 +97,7 @@ def analyze():
     image.save(image_path)
 
     try:
+        # Full pipeline: detect breed, format, get token, find pets
         ai_breed = get_pet_breed(image_path)
         breed = format_breed(ai_breed)
         token = get_petfinder_token()
@@ -100,7 +107,6 @@ def analyze():
         for pet in results.get("animals", []):
             name = pet.get("name", "Unknown")
             pet_breed = pet.get("breeds", {}).get("primary", "Unknown")
-
             contact = pet.get("contact", {})
             city = contact.get("city", "")
             state = contact.get("state", "")
@@ -132,6 +138,6 @@ def analyze():
     except Exception as e:
         return jsonify({"error": str(e)}), 500
 
-
+# Run Flask app
 if __name__ == "__main__":
     app.run(debug=True)

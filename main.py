@@ -4,29 +4,29 @@ import os
 import cv2
 from dotenv import load_dotenv
 
+# Load environment variables
 load_dotenv()
 
-# API STUFF
+# API keys and model path
 PETFINDER_API_KEY = os.getenv("PETFINDER_API_KEY")
 PETFINDER_API_SECRET = os.getenv("PETFINDER_API_SECRET")
 MODEL_PATH = "petfinder_best.pt"
 
-# AI MODEL
+# Detect pet breed from image using YOLO
 def get_pet_breed(image_path):
     model = YOLO(MODEL_PATH)
     results = model(image_path)
-
     for result in results:
         class_ids = result.boxes.cls.tolist()
         for cls_id in class_ids:
             return result.names[int(cls_id)]
 
-# FORMAT BREED NAME FOR PETFINDER
+# Clean breed name for Petfinder
 def format_breed(ai_breed):
     breed = ai_breed.replace("dog-", "").replace("_", " ")
     return breed.title()
 
-# GET PETFINDER ACCESS TOKEN
+# Get access token from Petfinder
 def get_petfinder_token():
     res = requests.post("https://api.petfinder.com/v2/oauth2/token", data={
         "grant_type": "client_credentials",
@@ -40,7 +40,7 @@ def get_petfinder_token():
 
     return res.json().get("access_token")
 
-# SEARCH PETS
+# Search for adoptable pets by breed and location
 def find_pets_nearby(breed, location, token):
     if not token:
         return []
@@ -58,7 +58,7 @@ def find_pets_nearby(breed, location, token):
     res = requests.get("https://api.petfinder.com/v2/animals", headers=headers, params=params)
     return res.json()
 
-# GET ORG DETAILS IF LOCATION IS MISSING
+# Get organization info if pet location is missing
 def get_organization_details(org_id, token):
     url = f"https://api.petfinder.com/v2/organizations/{org_id}"
     headers = {"Authorization": f"Bearer {token}"}
@@ -72,15 +72,15 @@ def get_organization_details(org_id, token):
         return name, city, state
     return org_id, "", ""
 
-# Load the model once at module level
+# Load model once to reuse
 model = YOLO("petfinder_best.pt")
 
+# Detect breed from image input
 def run_detection(input_path):
     img = cv2.imread(input_path)
     results = model(img)
 
     predicted_class = "Unknown"
-
     for r in results:
         class_ids = r.boxes.cls.tolist()
         if class_ids:
