@@ -75,7 +75,7 @@
       <h5 id="resultText"></h5>
       <img id="outputImage" class="preview-img" style="display:none;" />
 
-      #DOG INFO SECTION
+      
       <div id="dogInfo" class="alert alert-info mt-3" style="display:none;">
         <strong>Detected Breed:</strong> <span id="breedText"></span>
       </div>
@@ -116,7 +116,7 @@ document.getElementById('uploadForm').addEventListener('submit', async function(
     listContainer.innerHTML = `<h5>Nearby ${data.formatted_breed}s for Adoption:</h5><ul class="list-group">` +
       data.results.map(pet => `
         <li class="list-group-item">
-          <strong>${pet.name}</strong> — ${pet.breed}<br>
+          <strong><a href="${pet.url}" target="_blank">${pet.name}</a></strong> — ${pet.breed}<br>
           <small>${pet.location} (Distance: ${pet.distance} miles)</small>
         </li>
       `).join('') + `</ul>`;

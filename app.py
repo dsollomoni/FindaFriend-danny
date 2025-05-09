@@ -75,7 +75,8 @@ def upload():
             "name": name,
             "breed": pet_breed,
             "location": location_text,
-            "distance": distance
+            "distance": distance,
+            "url": pet.get("url", "#")
         })
 
     return jsonify({
