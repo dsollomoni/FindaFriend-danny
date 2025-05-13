@@ -7,6 +7,8 @@ from flask import Flask, request, jsonify, render_template
 import os
 from main import get_pet_breed, format_breed, get_petfinder_token, find_pets_nearby, get_organization_details
 
+#Must active .venv
+#
 # Initialize Flask app
 app = Flask(__name__)
 CORS(app)
