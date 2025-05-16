@@ -72,6 +72,7 @@
       </div>
       <div class="d-grid">
         <button type="submit" class="btn btn-primary">Upload & Detect</button>
+        <button type="button" id="clearBtn" class="btn btn-secondary mt-2" style="display: none;">Clear Results</button>
       </div>
     </form>
 
@@ -87,14 +88,20 @@
   </div>
 
  <script>
+const clearBtn = document.getElementById('clearBtn');
+const fileInput = document.getElementById('fileInput');
+const zipInput = document.getElementById('zipInput');
+const resultArea = document.getElementById('resultArea');
+const resultText = document.getElementById('resultText');
+const dogInfo = document.getElementById('dogInfo');
+const breedText = document.getElementById('breedText');
+
 document.getElementById('uploadForm').addEventListener('submit', async function(e) {
   e.preventDefault();
 
   const formData = new FormData();
-  const fileInput = document.getElementById('fileInput');
   formData.append('file', fileInput.files[0]);
-  formData.append('location', document.getElementById('zipInput').value);
-
+  formData.append('location', zipInput.value);
 
   const res = await fetch('/upload', {
     method: 'POST',
@@ -103,23 +110,19 @@ document.getElementById('uploadForm').addEventListener('submit', async function(
 
   const data = await res.json();
 
-  const resultText = document.getElementById('resultText');
-  const breedText = document.getElementById('breedText');
-  const dogInfo = document.getElementById('dogInfo');
-  const resultArea = document.getElementById('resultArea');
-
+  // Show predicted breed
   if (data.success) {
     resultText.textContent = "Detection complete!";
-
-    // Show predicted breed
     breedText.textContent = data.formatted_breed;
     dogInfo.style.display = 'block';
+    clearBtn.style.display = 'inline-block';
 
     // Show adoptable dogs list
     const listContainer = document.createElement('div');
     listContainer.classList.add('mt-3');
+    listContainer.setAttribute('id', 'petList');
 
-    listContainer.innerHTML = `<h5>Nearby ${data.formatted_breed}s for Adoption by ZIP ${document.getElementById('zipInput').value}:</h5><ul class="list-group">` +
+    listContainer.innerHTML = `<h5>Nearby ${data.formatted_breed}s for Adoption by ${zipInput.value}:</h5><ul class="list-group">` +
       data.results.map(pet => `
         <li class="list-group-item">
           <strong><a href="${pet.url}" target="_blank">${pet.name}</a></strong> — ${pet.breed}<br>
@@ -133,6 +136,19 @@ document.getElementById('uploadForm').addEventListener('submit', async function(
     dogInfo.style.display = 'none';
   }
 });
+
+clearBtn.addEventListener('click', () => {
+  fileInput.value = '';
+  zipInput.value = '';
+  resultText.textContent = '';
+  breedText.textContent = '';
+  dogInfo.style.display = 'none';
+  clearBtn.style.display = 'none';
+
+  const petList = document.getElementById('petList');
+  if (petList) petList.remove();
+});
+
 </script>
 
 
