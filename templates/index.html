@@ -110,12 +110,14 @@ document.getElementById('uploadForm').addEventListener('submit', async function(
 
   const data = await res.json();
 
+  // Show predicted breed
   if (data.success) {
     resultText.textContent = "Detection complete!";
     breedText.textContent = data.formatted_breed;
     dogInfo.style.display = 'block';
     clearBtn.style.display = 'inline-block';
 
+    // Show adoptable dogs list
     const listContainer = document.createElement('div');
     listContainer.classList.add('mt-3');
     listContainer.setAttribute('id', 'petList');
