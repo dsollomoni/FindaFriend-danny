@@ -12,12 +12,14 @@ ________________
 
 
 Setup Instructions
+Download attached yolomodel file 
+petfinder_best.pt
+
 1. Create and Activate the Virtual Environment
 python3 -m venv .venv
 source .venv/bin/activate  # On macOS/Linux
 # OR
 .venv\Scripts\activate     # On Windows
-
 
 2. Install Dependencies
 pip install -r requirements.txt
@@ -25,6 +27,10 @@ pip install -r requirements.txt
 
 Note: API credentials are already included in the .env file. No additional setup is needed for environment variables.
 ________________
+Create a .env file in the root directory with the following content:
+PETFINDER_API_KEY=Ev1hB0ylIcLKI6t9aLvvW3qN1WqvXHrNfmFRiaxkdHXTJ4rdnV
+PETFINDER_API_SECRET=ah7Z6evjK6ZHYeuOJMsvqi501yz3MypoNkTpGCVk
+
 
 
 Running the Application
