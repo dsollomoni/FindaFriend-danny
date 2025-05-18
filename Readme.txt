@@ -16,12 +16,14 @@ Download attached yolomodel file
 petfinder_best.pt
 
 1. Create and Activate the Virtual Environment
-python3 -m venv .venv
+python3 -m venv .venv OR python -m venv .venv
 source .venv/bin/activate  # On macOS/Linux
 # OR
 .venv\Scripts\activate     # On Windows
 
-2. Install Dependencies
+2. cd FindaFriend
+
+3. Install Dependencies
 pip install -r requirements.txt
 
 
@@ -33,7 +35,7 @@ PETFINDER_API_SECRET=ah7Z6evjK6ZHYeuOJMsvqi501yz3MypoNkTpGCVk
 
 
 
-Running the Application
+4. Running the Application
 python app.py
 
 
